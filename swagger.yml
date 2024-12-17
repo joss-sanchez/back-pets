@@ -1,0 +1,656 @@
+openapi: 3.0.3
+info:
+  title: Back Pets API
+  description: API para gestionar fundaciones y mascotas en la plataforma de adopciones.
+  version: 1.0.0
+servers:
+  - url: https://9hfwyjxfbk.execute-api.us-east-1.amazonaws.com/test
+paths:
+  /hello:
+    get:
+      summary: Saludar
+      description: Endpoint de ejemplo para verificar conexión.
+      responses:
+        '200':
+          description: Respuesta exitosa.
+      security:
+        - BearerAuth: []
+  /foundation:
+    post:
+      summary: Agregar una fundación
+      description: Crea una nueva fundación.
+      requestBody:
+        description: Datos de la fundación a crear.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                Item:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      example: "My foundation c"
+              required:
+                - Item
+                - name
+      responses:
+        '201':
+          description: Fundación creada exitosamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    description: Nombre de la fundación.
+                    example: "My foundation c"
+                  userId:
+                    type: string
+                    description: ID del usuario creador.
+                    example: "test_user"
+                  userName:
+                    type: string
+                    description: Nombre del usuario creador.
+                    example: "test_user_name"
+                  foundationId:
+                    type: string
+                    description: ID único de la fundación.
+                    example: "test_user:ead2989b-4fba-473c-b7d7-c25ef6614a91"
+                  timestamp:
+                    type: integer
+                    description: Marca de tiempo de creación (epoch).
+                    example: 1734450161218
+                  expires:
+                    type: integer
+                    description: Fecha de expiración en epoch.
+                    example: 1742226161218
+        '400':
+          description: Datos inválidos.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: header
+          name: app_user_id
+          required: true
+          schema:
+            type: string
+          description: ID del usuario.
+        - in: header
+          name: app_user_name
+          required: true
+          schema:
+            type: string
+          description: Nombre del usuario.
+    patch:
+      summary: Actualizar una fundación
+      description: Actualiza la información de una fundación existente.
+      requestBody:
+        description: Datos de la fundación a actualizar.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                Item:
+                  type: object
+                  properties:
+                    foundationId:
+                      type: string
+                      description: ID único de la fundación.
+                      example: "test_user:ead2989b-4fba-473c-b7d7-c25ef6614a91"
+                    timestamp:
+                      type: integer
+                      description: Marca de tiempo de creación (epoch).
+                      example: 1734450161218
+                    name:
+                      type: string
+                      example: "My foundation c"
+              required:
+                - Item
+                - name
+      responses:
+        '200':
+          description: Fundación actualizada exitosamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    description: Nombre de la fundación.
+                    example: "My foundation c"
+                  userId:
+                    type: string
+                    description: ID del usuario creador.
+                    example: "test_user"
+                  userName:
+                    type: string
+                    description: Nombre del usuario creador.
+                    example: "test_user_name"
+                  foundationId:
+                    type: string
+                    description: ID único de la fundación.
+                    example: "test_user:ead2989b-4fba-473c-b7d7-c25ef6614a91"
+                  timestamp:
+                    type: integer
+                    description: Marca de tiempo de creación (epoch).
+                    example: 1734450161218
+                  expires:
+                    type: integer
+                    description: Fecha de expiración en epoch.
+                    example: 1742226161218
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: header
+          name: app_user_id
+          required: true
+          schema:
+            type: string
+          description: ID del usuario.
+        - in: header
+          name: app_user_name
+          required: true
+          schema:
+            type: string
+          description: Nombre del usuario.
+  /foundations:
+    get:
+      summary: Listar fundaciones
+      description: Devuelve todas las fundaciones.
+      responses:
+        '200':
+          description: Lista de fundaciones.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          description: Nombre de la fundación.
+                          example: "My foundation c"
+                        userId:
+                          type: string
+                          description: ID del usuario creador.
+                          example: "test_user"
+                        userName:
+                          type: string
+                          description: Nombre del usuario creador.
+                          example: "test_user_name"
+                        foundationId:
+                          type: string
+                          description: ID único de la fundación.
+                          example: "test_user:ead2989b-4fba-473c-b7d7-c25ef6614a91"
+                        timestamp:
+                          type: integer
+                          description: Marca de tiempo de creación (epoch).
+                          example: 1734450161218
+                        expires:
+                          type: integer
+                          description: Fecha de expiración en epoch.
+                          example: 1742226161218
+                  Count:
+                    type: number
+                    description: total de fundaciones consultadas
+                    example: 5
+                  ScannedCount:
+                    type: number
+                    description: total de fundaciones existentes
+                    example: 5
+                  LastEvaluatedKey:
+                    type: object
+                    properties:
+                      foundationId:
+                        type: string
+                        description: Id de la fundación.
+                        example: "test_user:3144f67b-7154-47ad-8000-0a22dc3fd8d5"
+                      timestamp:
+                          type: integer
+                          description: Marca de tiempo de creación (epoch).
+                          example: 1734450161218
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: header
+          name: app_user_id
+          required: true
+          schema:
+            type: string
+          description: ID del usuario.
+        - in: header
+          name: app_user_name
+          required: true
+          schema:
+            type: string
+          description: Nombre del usuario.
+  /foundation/n/{foundationId}:
+    get:
+      summary: Obtener una fundación
+      description: Devuelve los datos de una fundación por su ID.
+      parameters:
+        - name: foundationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: app_user_id
+          required: true
+          schema:
+            type: string
+          description: ID del usuario.
+        - in: header
+          name: app_user_name
+          required: true
+          schema:
+            type: string
+          description: Nombre del usuario.
+      responses:
+        '200':
+          description: Fundación encontrada.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    description: Nombre de la fundación.
+                    example: "My foundation c"
+                  userId:
+                    type: string
+                    description: ID del usuario creador.
+                    example: "test_user"
+                  userName:
+                    type: string
+                    description: Nombre del usuario creador.
+                    example: "test_user_name"
+                  foundationId:
+                    type: string
+                    description: ID único de la fundación.
+                    example: "test_user:ead2989b-4fba-473c-b7d7-c25ef6614a91"
+                  timestamp:
+                    type: integer
+                    description: Marca de tiempo de creación (epoch).
+                    example: 1734450161218
+                  expires:
+                    type: integer
+                    description: Fecha de expiración en epoch.
+                    example: 1742226161218
+      security:
+        - BearerAuth: []
+  /foundation/t/{timestamp}:
+    delete:
+      summary: Eliminar una fundación
+      description: Elimina una fundación utilizando un timestamp.
+      parameters:
+        - name: timestamp
+          in: path
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: app_foundation_id
+          required: true
+          schema:
+            type: string
+          description: ID de la fundacion.
+      responses:
+        '204':
+          description: Fundación eliminada exitosamente.
+      security:
+        - BearerAuth: []
+  /pet:
+    post:
+      summary: Agregar una mascota
+      description: Crea una nueva mascota.
+      requestBody:
+        description: Datos de la mascota.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                Item:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: Nombre de la mascota.
+                      example: "piolin"
+                    type:
+                      type: string
+                      description: tipo de la mascota.
+                      example: "pajaro"
+                    race:
+                      type: string
+                      description: raza de la mascota.
+                      example: "loro"
+              required:
+                - Item
+                - name
+      responses:
+        '201':
+          description: Mascota creada exitosamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  foundationId:
+                    type: string
+                    description: ID único de la fundación.
+                    example: "test_user:ead2989b-4fba-473c-b7d7-c25ef6614a91"
+                  petId:
+                    type: number
+                    description: ID único de la mascota.
+                    example: "1234567"
+                  name:
+                    type: string
+                    description: Nombre de la mascota.
+                    example: "piolin"
+                  type:
+                    type: string
+                    description: tipo de la mascota.
+                    example: "pajaro"
+                  race:
+                    type: string
+                    description: raza de la mascota.
+                    example: "loro"
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: header
+          name: app_foundation_id
+          required: true
+          schema:
+            type: string
+          description: ID de la fundacion.
+    patch:
+      summary: Actualizar una mascota
+      description: Actualiza la información de una mascota existente.
+      requestBody:
+        description: Datos de la mascota a actualizar.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                Item:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: Nombre de la mascota.
+                      example: "piolin"
+                    type:
+                      type: string
+                      description: tipo de la mascota.
+                      example: "pajaro"
+                    race:
+                      type: string
+                      description: raza de la mascota.
+                      example: "loro"
+              required:
+                - Item
+                - name
+      responses:
+        '200':
+          description: Mascota actualizada exitosamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  foundationId:
+                    type: string
+                    description: ID único de la fundación.
+                    example: "test_user:ead2989b-4fba-473c-b7d7-c25ef6614a91"
+                  petId:
+                    type: number
+                    description: ID único de la mascota.
+                    example: "1234567"
+                  name:
+                    type: string
+                    description: Nombre de la mascota.
+                    example: "piolin"
+                  type:
+                    type: string
+                    description: tipo de la mascota.
+                    example: "pajaro"
+                  race:
+                    type: string
+                    description: raza de la mascota.
+                    example: "loro"
+      security:
+        - BearerAuth: []
+  /pets:
+    get:
+      summary: Listar mascotas
+      description: Devuelve todas las mascotas.
+      responses:
+        '200':
+          description: Lista de mascotas.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        foundationId:
+                          type: string
+                          description: ID único de la fundación.
+                          example: "test_user:ead2989b-4fba-473c-b7d7-c25ef6614a91"
+                        petId:
+                          type: number
+                          description: ID único de la mascota.
+                          example: "1234567"
+                        name:
+                          type: string
+                          description: Nombre de la mascota.
+                          example: "piolin"
+                        type:
+                          type: string
+                          description: tipo de la mascota.
+                          example: "pajaro"
+                        race:
+                          type: string
+                          description: raza de la mascota.
+                          example: "arn:aws:dynamodb:us-east-1:687780365190:table/alegra-back-pets-test-foundations"
+                  Count:
+                    type: number
+                    description: total de fundaciones consultadas
+                    example: 5
+                  ScannedCount:
+                    type: number
+                    description: total de fundaciones existentes
+                    example: 5
+                  LastEvaluatedKey:
+                    type: object
+                    properties:
+                      foundationId:
+                        type: string
+                        description: Id de la fundación.
+                        example: "test_user:3144f67b-7154-47ad-8000-0a22dc3fd8d5"
+                      timestamp:
+                          type: integer
+                          description: Marca de tiempo de creación (epoch).
+                          example: 1734450161218
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: header
+          name: app_foundation_id
+          required: true
+          schema:
+            type: string
+          description: ID de la fundacion.
+  /pet/p/{petId}:
+    get:
+      summary: Obtener una mascota
+      description: Devuelve los datos de una mascota por su ID.
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: app_foundation_id
+          required: true
+          schema:
+            type: string
+          description: ID de la fundacion.
+      responses:
+        '200':
+          description: Mascota encontrada.
+      security:
+        - BearerAuth: []
+    delete:
+      summary: Eliminar una mascota
+      description: Elimina una mascota por su ID.
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: app_foundation_id
+          required: true
+          schema:
+            type: string
+          description: ID de la fundacion.
+      responses:
+        '204':
+          description: Mascota eliminada exitosamente.
+      security:
+        - BearerAuth: []
+  /pets/search:
+    get:
+      summary: Buscar mascotas
+      description: Busca mascotas por filtros específicos.
+      parameters:
+        - name: name
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Nombre de la mascota.
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Tipo de mascota (ej. perro, gato, etc.).
+        - name: race
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Raza de mascota.
+        - in: header
+          name: app_foundation_id
+          required: true
+          schema:
+            type: string
+          description: ID de la fundacion.
+      responses:
+        '200':
+          description: Resultados de la búsqueda.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        foundationId:
+                          type: string
+                          description: ID único de la fundación.
+                          example: "test_user:ead2989b-4fba-473c-b7d7-c25ef6614a91"
+                        petId:
+                          type: number
+                          description: ID único de la mascota.
+                          example: "1234567"
+                        name:
+                          type: string
+                          description: Nombre de la mascota.
+                          example: "piolin"
+                        type:
+                          type: string
+                          description: tipo de la mascota.
+                          example: "pajaro"
+                        race:
+                          type: string
+                          description: raza de la mascota.
+                          example: "arn:aws:dynamodb:us-east-1:687780365190:table/alegra-back-pets-test-foundations"
+                  Count:
+                    type: number
+                    description: total de fundaciones consultadas
+                    example: 5
+                  ScannedCount:
+                    type: number
+                    description: total de fundaciones existentes
+                    example: 5
+                  LastEvaluatedKey:
+                    type: object
+                    properties:
+                      foundationId:
+                        type: string
+                        description: Id de la fundación.
+                        example: "test_user:3144f67b-7154-47ad-8000-0a22dc3fd8d5"
+                      timestamp:
+                          type: integer
+                          description: Marca de tiempo de creación (epoch).
+                          example: 1734450161218
+      security:
+        - BearerAuth: []
+  /pet/p/{petId}/adopted:
+    get:
+      summary: Marcar mascota como adoptada
+      description: Actualiza el estado de una mascota a adoptada.
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: app_foundation_id
+          required: true
+          schema:
+            type: string
+          description: ID de la fundacion.
+      responses:
+        '200':
+          description: Estado de la mascota actualizado a adoptada.
+      security:
+        - BearerAuth: []
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

@@ -1,0 +1,338 @@
+org: trainingalegra
+service: back-pets
+
+custom:
+  layersDeploymentBucket: layers-bucket-pets
+  allowedHeaders:
+    - Accept
+    - Content-Type
+    - Content-Length
+    - Authorization
+    - X-Amz-Date
+    - X-Api-Key
+    - X-Amz-Security-Token
+    - X-Amz-User-Agent
+    - app_user_id
+    - app_user_name
+  customDomain:
+    domainName: joss-training-pets.alegra.com
+    basePath: v1
+    stage: ${self:provider.stage}
+    certificateName: joss-training-pets.alegra.com
+    createRoute53Record: true
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-east-1
+  stage: test
+  profile: 687780365190_AdministratorAccess
+  deploymentBucket:
+    name: layers-bucket-pets
+  environment:
+    NODE_PATH: /opt/nodejs/node_modules
+    ALEGRA_FOUNDATIONS_TABLE: arn:aws:dynamodb:us-east-1:687780365190:table/alegra-back-pets-test-foundations
+    ALEGRA_PETS_TABLE: arn:aws:dynamodb:us-east-1:687780365190:table/alegra-back-pets-test-pets
+    BODY_BUCKET_NAME: body-bucket-pets
+    AUTHORIZER_LAMBDA_NAME: ${self:service}-${opt:stage, self:provider.stage}-authorizer
+    SECRET_TOKEN: valid-token-alegra-pets-secret
+    SNS_TOPIC_ARN: arn:aws:sns:us-east-1:687780365190:notificationPets-PetAdoptionTopic11870CCA
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - lambda:InvokeFunction
+      Resource:
+        - arn:aws:lambda:${opt:region,
+          self:provider.region}:*:function:${self:provider.environment.AUTHORIZER_LAMBDA_NAME}
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:DeleteItem
+      Resource:
+        - ${self:provider.environment.ALEGRA_FOUNDATIONS_TABLE}
+        - ${self:provider.environment.ALEGRA_FOUNDATIONS_TABLE}/index/foundationId-index
+        - ${self:provider.environment.ALEGRA_PETS_TABLE}
+        - ${self:provider.environment.ALEGRA_PETS_TABLE}/index/foundationId-index
+        - ${self:provider.environment.ALEGRA_PETS_TABLE}/index/petId-index
+    - Effect: Allow
+      Action:
+        - s3:PutObject
+        - s3:GetObject
+        - s3:DeleteObject
+        - s3:ListBucket
+      Resource:
+        - arn:aws:s3:::body-bucket-pets
+        - arn:aws:s3:::body-bucket-pets/*
+    - Effect: Allow
+      Action:
+        - sns:Publish
+      Resource: ${self:provider.environment.SNS_TOPIC_ARN}
+
+resources:
+  Resources:
+    MySnsTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: notificationPets-PetAdoptionTopic11870CCA
+    MySnsSubscription:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Endpoint: josseline.sanchez@alegra.com
+        Protocol: email
+        TopicArn: !Ref MySnsTopic
+    MySnsSubscriptionLeader:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Endpoint: flor.garcia@alegra.com
+        Protocol: email
+        TopicArn: !Ref MySnsTopic
+
+plugins:
+  - serverless-offline
+  - serverless-domain-manager
+
+package:
+  exclude:
+    - layers/shared/**
+
+layers:
+  shared:
+    path: layers/shared
+    package:
+      include:
+        - layers/nodejs/**
+
+functions:
+  authorizer:
+    handler: auth/authorizer.handler
+    description: Lambda Authorizer for API Gateway
+    layers:
+      - !Ref SharedLambdaLayer
+  hello:
+    handler: handler.hello
+    events:
+      - http:
+          path: hello
+          method: get
+          cors:
+            origin: '*'
+            headers: ${self:custom.allowedHeaders}
+          authorizer:
+            name: authorizer
+            type: REQUEST
+            identitySource: method.request.header.Authorization
+    layers:
+      - !Ref SharedLambdaLayer
+  addFoundation:
+    handler: api/foundations/add.handler
+    description: POST /foundation
+    events:
+      - http:
+          path: foundation
+          method: post
+          cors:
+            origin: '*'
+            headers: ${self:custom.allowedHeaders}
+          authorizer:
+            name: authorizer
+            type: REQUEST
+            identitySource: method.request.header.Authorization
+    layers:
+      - !Ref SharedLambdaLayer
+  updateFoundation:
+    handler: api/foundations/update.handler
+    description: PATCH /foundation
+    events:
+      - http:
+          path: foundation
+          method: patch
+          cors:
+            origin: '*'
+            headers: ${self:custom.allowedHeaders}
+          authorizer:
+            name: authorizer
+            type: REQUEST
+            identitySource: method.request.header.Authorization
+    layers:
+      - !Ref SharedLambdaLayer
+  listFoundations:
+    handler: api/foundations/list.handler
+    description: GET /foundations
+    events:
+      - http:
+          path: foundations
+          method: get
+          cors:
+            origin: '*'
+            headers: ${self:custom.allowedHeaders}
+          authorizer:
+            name: authorizer
+            type: REQUEST
+            identitySource: method.request.header.Authorization
+    layers:
+      - !Ref SharedLambdaLayer
+  findOneFoundation:
+    handler: api/foundations/findOne.handler
+    description: GET /foundation/n/{foundationId}
+    events:
+      - http:
+          path: foundation/n/{foundationId}
+          method: get
+          cors:
+            origin: '*'
+            headers: ${self:custom.allowedHeaders}
+          authorizer:
+            name: authorizer
+            type: REQUEST
+            identitySource: method.request.header.Authorization
+    layers:
+      - !Ref SharedLambdaLayer
+  removeFoundation:
+    handler: api/foundations/delete.handler
+    description: DELETE /foundation/t/{timestamp}
+    events:
+      - http:
+          path: foundation/t/{timestamp}
+          method: delete
+          cors:
+            origin: '*'
+            headers: ${self:custom.allowedHeaders}
+          authorizer:
+            name: authorizer
+            type: REQUEST
+            identitySource: method.request.header.Authorization
+    layers:
+      - !Ref SharedLambdaLayer
+  addPet:
+    handler: api/pets/add.handler
+    description: POST /pet
+    events:
+      - http:
+          path: pet
+          method: post
+          cors:
+            origin: '*'
+            headers: ${self:custom.allowedHeaders}
+          authorizer:
+            name: authorizer
+            type: REQUEST
+            identitySource: method.request.header.Authorization
+    layers:
+      - !Ref SharedLambdaLayer
+  updatePet:
+    handler: api/pets/update.handler
+    description: PATCH /pet
+    events:
+      - http:
+          path: pet
+          method: patch
+          cors:
+            origin: '*'
+            headers: ${self:custom.allowedHeaders}
+          authorizer:
+            name: authorizer
+            type: REQUEST
+            identitySource: method.request.header.Authorization
+    layers:
+      - !Ref SharedLambdaLayer
+  listPets:
+    handler: api/pets/list.handler
+    description: GET /pets
+    events:
+      - http:
+          path: pets
+          method: get
+          cors:
+            origin: '*'
+            headers: ${self:custom.allowedHeaders}
+          authorizer:
+            name: authorizer
+            type: REQUEST
+            identitySource: method.request.header.Authorization
+    layers:
+      - !Ref SharedLambdaLayer
+  findOnePet:
+    handler: api/pets/findOne.handler
+    description: GET /pet/p/{petId}
+    events:
+      - http:
+          path: pet/p/{petId}
+          method: get
+          cors:
+            origin: '*'
+            headers: ${self:custom.allowedHeaders}
+          authorizer:
+            name: authorizer
+            type: REQUEST
+            identitySource: method.request.header.Authorization
+    layers:
+      - !Ref SharedLambdaLayer
+  removePet:
+    handler: api/pets/delete.handler
+    description: DELETE /pet/p/{petId}
+    events:
+      - http:
+          path: pet/p/{petId}
+          method: delete
+          cors:
+            origin: '*'
+            headers: ${self:custom.allowedHeaders}
+          authorizer:
+            name: authorizer
+            type: REQUEST
+            identitySource: method.request.header.Authorization
+    layers:
+      - !Ref SharedLambdaLayer
+  searchPets:
+    handler: api/pets/search.handler
+    description: GET /pets/search
+    events:
+      - http:
+          path: pets/search
+          method: get
+          cors:
+            origin: '*'
+            headers: ${self:custom.allowedHeaders}
+          authorizer:
+            name: authorizer
+            type: REQUEST
+            identitySource: method.request.header.Authorization
+    layers:
+      - !Ref SharedLambdaLayer
+  adoptedPet:
+    handler: api/pets/adopted.handler
+    description: GET /pet/p/{petId}/adopted
+    events:
+      - http:
+          path: pet/p/{petId}/adopted
+          method: get
+          cors:
+            origin: '*'
+            headers: ${self:custom.allowedHeaders}
+          authorizer:
+            name: authorizer
+            type: REQUEST
+            identitySource: method.request.header.Authorization
+    layers:
+      - !Ref SharedLambdaLayer
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  Api:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub
+        - ${ResourceName} From Stack ${AWS::StackName}
+        - ResourceName: Api
+      StageName: Prod
+      DefinitionBody:
+        openapi: '3.0'
+        info: {}
+        paths:
+          /:
+            get:
+              responses: {}
+      EndpointConfiguration: REGIONAL
+      TracingEnabled: true
